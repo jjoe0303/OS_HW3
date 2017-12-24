@@ -15,15 +15,15 @@ enum TASK_STATE {
 	TASK_TERMINATED
 };
 
-struct task{
-    int pid;
-    char *name;
-    int state;
-    int queuetime;
-    struct task *next;
-    struct task *prev;
-    struct task *namenext;//search for name
-    struct task *nameprev;
+struct task {
+	int pid;
+	char *name;
+	int state;
+	int queuetime;
+	struct task *next;
+	struct task *prev;
+	struct task *namenext;//search for name
+	struct task *nameprev;
 };
 
 int gpid=0;//global pid
