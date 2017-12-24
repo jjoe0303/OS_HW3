@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <ucontext.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "task.h"
 
@@ -13,6 +15,18 @@ enum TASK_STATE {
 	TASK_TERMINATED
 };
 
+struct task{
+    int pid;
+    char *name;
+    int state;
+    int queuetime;
+    struct task *next;
+    struct task *prev;
+    struct task *namenext;//search for name
+    struct task *nameprev;
+};
+
+int gpid=0;//global pid
 void hw_suspend(int msec_10);
 void hw_wakeup_pid(int pid);
 int hw_wakeup_taskname(char *task_name);
