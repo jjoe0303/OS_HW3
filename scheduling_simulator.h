@@ -29,7 +29,7 @@ struct task {
 	int queuetime;
 	int quantum;
 	int runtime;
-    int waittime;
+	int waittime;
 	struct task *next;
 	struct task *prev;
 	struct task *namenext;//search for name
