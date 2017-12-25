@@ -15,15 +15,25 @@ enum TASK_STATE {
 	TASK_TERMINATED
 };
 
+static const char *task_string[] = {
+        "TASK_RUNNING",
+        "TASK_READY",
+        "TASK_WAITING",
+        "TASK_TERMINATED"
+};
+
 struct task {
 	int pid;
 	char *name;
 	int state;
 	int queuetime;
-	struct task *next;
+    int quantum;
+    int runtime;
+    struct task *next;
 	struct task *prev;
 	struct task *namenext;//search for name
 	struct task *nameprev;
+//    ucontext_t uc;
 };
 
 int gpid=0;//global pid
