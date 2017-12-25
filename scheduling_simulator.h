@@ -16,10 +16,10 @@ enum TASK_STATE {
 };
 
 static const char *task_string[] = {
-        "TASK_RUNNING",
-        "TASK_READY",
-        "TASK_WAITING",
-        "TASK_TERMINATED"
+	"TASK_RUNNING",
+	"TASK_READY",
+	"TASK_WAITING",
+	"TASK_TERMINATED"
 };
 
 struct task {
@@ -27,9 +27,9 @@ struct task {
 	char *name;
 	int state;
 	int queuetime;
-    int quantum;
-    int runtime;
-    struct task *next;
+	int quantum;
+	int runtime;
+	struct task *next;
 	struct task *prev;
 	struct task *namenext;//search for name
 	struct task *nameprev;
