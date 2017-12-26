@@ -2,6 +2,7 @@
 
 struct task *head;
 struct task *temp;
+struct task *now;
 static ucontext_t ucp;
 
 void hw_suspend(int msec_10)
@@ -32,6 +33,10 @@ struct task *getnewtask(char *task_name)
 	newnode->state = TASK_READY;
 	newnode->queuetime = 0;
 	newnode->quantum = 10;
+	getcontext(&(newnode->uc));
+	(newnode->uc).uc_link = &ucp;
+	(newnode->uc).uc_stack.ss_sp = newnode->st;
+	(newnode->uc).uc_stack.ss_size = sizeof(newnode->st);
 	return newnode;
 }
 
@@ -79,6 +84,28 @@ int hw_task_create(char *task_name)
 	struct task *tmp = head;
 	//struct task *nametmp = head;
 	struct task *newtask = getnewtask(task_name);
+	if(strcmp((newtask->name),"task1")==0) {
+		makecontext(&(newtask->uc),task1,0);
+		printf("set task1 context\n");
+	} else if(strcmp((newtask->name),"task2")==0) {
+		makecontext(&(newtask->uc),task2,0);
+		printf("set task2 context\n");
+	} else if(strcmp((newtask->name),"task3")==0) {
+		makecontext(&(newtask->uc),task3,0);
+		printf("set task3 context\n");
+	} else if(strcmp((newtask->name),"task4")==0) {
+		makecontext(&(newtask->uc),task4,0);
+		printf("set task4 context\n");
+	} else if(strcmp((newtask->name),"task5")==0) {
+		makecontext(&(newtask->uc),task5,0);
+		printf("set task5 context\n");
+	} else if(strcmp((newtask->name),"task6")==0) {
+		makecontext(&(newtask->uc),task6,0);
+		printf("set task6 context\n");
+	} else {
+		printf("No such task!!\n");
+	}
+
 	if(head == NULL) {
 		head = newtask;
 		return newtask->pid;
@@ -89,14 +116,14 @@ int hw_task_create(char *task_name)
 	newtask->prev = tmp;
 
 	/*	    while(nametmp != NULL) {
-		        if(strcmp(nametmp->name,task_name)==0){
-		            while(nametmp->namenext!=NULL) nametmp=nametmp->namenext;
-		            nametmp->namenext = newtask;
-		            newtask->nameprev = nametmp;
-		        }
-		        nametmp = nametmp->next;//search for same name node
-		    }
-	*/
+	        if(strcmp(nametmp->name,task_name)==0){
+	        while(nametmp->namenext!=NULL) nametmp=nametmp->namenext;
+	        nametmp->namenext = newtask;
+	        newtask->nameprev = nametmp;
+	        }
+	        nametmp = nametmp->next;//search for same name node
+	        }
+	 */
 	return newtask->pid; // the pid of created task name
 }
 
@@ -121,7 +148,7 @@ void runtask(char *task_name)
 
 void handler()
 {
-	printf("In handler\n");
+
 	setcontext(&ucp);
 	return;
 }
@@ -216,26 +243,16 @@ int main()
 		}
 
 		else if(strcmp(command,"start\n")==0) {
-			signal(SIGTSTP,handler);
-			printf("simulating...\n");
-			while(1) {}
-		}
-		/*        int pid = hw_task_create("task1");
-		        if(pid==1){
-		            temp = head;
-				    printf("pid=%d,name=%s\n",temp->pid,temp->name);
-		        }
-		        else if(pid==-1){
-		            printf("Invalid task!!\n");
-		        }
-		        else{
-		            temp=temp->namenext;
-		            printf("pid=%d,name=%s\n",temp->pid,temp->name);
-		            pid = hw_task_create("task2");
-		            temp=temp->next;
-		            printf("pid=%d,name=%s\n",temp->pid,temp->name);
-		        }*/
+			if(head==NULL) {
+				printf("there's no job to start!\n");
+				continue;
+			} else {
 
+				signal(SIGTSTP,handler);
+				printf("simulating...\n");
+				while(1) {}
+			}
+		}
 	}
 	return 0;
 }

@@ -5,6 +5,11 @@
 #include <ucontext.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/time.h>
+#include <signal.h>
+#include <unistd.h>
+#include <time.h>
+#include <errno.h>
 
 #include "task.h"
 
@@ -34,7 +39,8 @@ struct task {
 	struct task *prev;
 	struct task *namenext;//search for name
 	struct task *nameprev;
-//    ucontext_t uc;
+	ucontext_t uc;
+	char st[8192];
 };
 
 int gpid=0;//global pid
