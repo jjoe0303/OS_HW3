@@ -56,22 +56,23 @@ struct task *getnewtask(char *task_name)
 
 void removetask(int dpid) //dpid = delete pid
 {
+	if(now->pid==dpid) flag=0;
 	struct task *tmp = head;
 	while(tmp!=NULL) {
 		if((tmp->pid == dpid) && (tmp->next==NULL) && (tmp->prev == NULL)) {
 			head = NULL;
-			free(tmp);
+//			free(tmp);
 			printf("Remove pid %d ~\n",dpid);
 			return;
 		} else if((tmp->pid == dpid) && (tmp->next==NULL)) { //is tail
 			tmp->prev->next = NULL;
-			free(tmp);
+//			free(tmp);
 			printf("Remove pid %d ~\n",dpid);
 			return;
 		} else if((tmp->pid == dpid) && (tmp->prev==NULL)) { //is head
 			head->next->prev = NULL;
 			head = head->next;
-			free(tmp);
+//			free(tmp);
 			printf("Remove pid %d ~\n",dpid);
 			return;
 		} else if(tmp->pid == dpid) {
@@ -79,7 +80,7 @@ void removetask(int dpid) //dpid = delete pid
 			tmp->next->prev = tmp->prev;
 			//	tmp->nameprev->namenext = tmp->namenext;
 			//	tmp->namenext->nameprev = tmp->nameprev;
-			free(tmp);
+//			free(tmp);
 			printf("Remove pid %d ~\n",dpid);
 			return;
 		}
@@ -166,10 +167,15 @@ void zhandler()
 	return;
 }
 
+void scanlist()
+{
+
+}
+
 void timeout()
 {
 	if(now->state==TASK_RUNNING) {
-		printf("pid %d change from running to ready!!\n",now->pid);
+		//	printf("pid %d change from running to ready!!\n",now->pid);
 		now->state=TASK_READY;
 		swapcontext(&(now->uc),&ucs);
 	}
@@ -180,20 +186,25 @@ void timeout()
 void terminate()
 {
 	now->state=TASK_TERMINATED;
+	printf("pid %d terminated~\n",now->pid);
 	swapcontext(&(now->uc),&ucs);
-	return;
+//	return;
 }
 
 void scheduler()
 {
+	if(now==NULL) now=head;
 	while(1) {
-		if(now==NULL) now=head;
 		if(now->state==TASK_READY) {
 			now->state = TASK_RUNNING;
 			swapcontext(&ucs,&(now->uc));
 			//printf("Im pid:%d\n",now->pid);
 		}
-		now=now->next;
+		if(now->next!=NULL) {
+			now=now->next;
+		} else if(now->next == NULL) { //tail
+			now=head;
+		}
 	}
 
 }
