@@ -8,8 +8,16 @@ struct task *now;
 static ucontext_t ucp;
 //scheduler ucs
 static ucontext_t ucs;
+//terminate uct
+static ucontext_t uct;
+//trash context
+static ucontext_t trash;
+
 //timer setup
 struct itimerval value,ovalue;
+
+//ctrl+z flag
+int flag=0;
 
 void hw_suspend(int msec_10)
 {
@@ -40,7 +48,7 @@ struct task *getnewtask(char *task_name)
 	newnode->queuetime = 0;
 	newnode->quantum = 10;
 	getcontext(&(newnode->uc));
-	(newnode->uc).uc_link = &ucp;
+	(newnode->uc).uc_link = &uct;
 	(newnode->uc).uc_stack.ss_sp = newnode->st;
 	(newnode->uc).uc_stack.ss_size = sizeof(newnode->st);
 	return newnode;
@@ -136,7 +144,7 @@ int hw_task_create(char *task_name)
 void (*oldahandler)(int);
 void (*oldzhandler)(int);
 
-void zhandler()
+void init_shell()
 {
 	//close timer
 	value.it_value.tv_sec = 0;
@@ -148,14 +156,31 @@ void zhandler()
 	//reset signal
 	signal(SIGALRM,oldahandler);
 	signal(SIGTSTP,oldzhandler);
+}
 
-	swapcontext(&ucs,&ucp);
+void zhandler()
+{
+	init_shell();
+	flag=1;
+	swapcontext(&(now->uc),&ucp); //why this line not restore ucs (not true yet)
 	return;
 }
 
 void timeout()
 {
-	printf("haha\n");
+	if(now->state==TASK_RUNNING) {
+		printf("pid %d change from running to ready!!\n",now->pid);
+		now->state=TASK_READY;
+		swapcontext(&(now->uc),&ucs);
+	}
+	//printf("haha\n");
+	return;
+}
+
+void terminate()
+{
+	now->state=TASK_TERMINATED;
+	swapcontext(&(now->uc),&ucs);
 	return;
 }
 
@@ -164,9 +189,9 @@ void scheduler()
 	while(1) {
 		if(now==NULL) now=head;
 		if(now->state==TASK_READY) {
-			//swapcontext(&ucs,&(now->uc));
 			now->state = TASK_RUNNING;
-			printf("Im pid:%d\n",now->pid);
+			swapcontext(&ucs,&(now->uc));
+			//printf("Im pid:%d\n",now->pid);
 		}
 		now=now->next;
 	}
@@ -187,6 +212,12 @@ int main()
 	ucs.uc_stack.ss_size = sizeof st1;
 	makecontext(&ucs,scheduler,0);
 
+	char stt[8192];
+	getcontext(&uct);
+	uct.uc_link = &ucs;
+	uct.uc_stack.ss_sp = stt;
+	uct.uc_stack.ss_size = sizeof stt;
+	makecontext(&uct,terminate,0);
 	while(1) {
 		getcontext(&ucp);
 		printf("$");
@@ -279,13 +310,19 @@ int main()
 				oldahandler=signal(SIGALRM,timeout);
 				oldzhandler=signal(SIGTSTP,zhandler);
 				//set timer
-				value.it_value.tv_sec = 2;
-				value.it_value.tv_usec = 0;
-				value.it_interval.tv_sec = 2;
-				value.it_interval.tv_usec = 0;
+				value.it_value.tv_sec = 0;
+				value.it_value.tv_usec = 10000;
+				value.it_interval.tv_sec = 0;
+				value.it_interval.tv_usec = 10000;
 				setitimer(ITIMER_REAL, &value, &ovalue);
 				printf("simulating...\n");
-				swapcontext(&ucp,&ucs);
+				if(flag==1) {
+					flag=0;
+					swapcontext(&ucp,&now->uc);
+					continue;
+				} else {
+					swapcontext(&ucp,&ucs);
+				}
 			}
 		}
 	}
