@@ -3,6 +3,7 @@
 //task list pointer
 struct task *head;
 struct task *temp;
+struct task *wake;
 struct task *now;
 //shell ucp
 static ucontext_t ucp;
@@ -30,6 +31,21 @@ void hw_suspend(int msec_10)
 
 void hw_wakeup_pid(int pid)
 {
+    wake = head;
+    while(wake!=NULL){
+        if(wake->pid == pid){
+            if(wake->state == TASK_WAITING){
+                wake->state = TASK_READY;
+                printf("wake up pid %d\n",wake->pid);
+            }
+            else{
+                printf("pid %d is not in waiting queue!!\n");
+            }
+            return;
+        }
+        wake = wake->next;
+    }
+    printf("No such pid~\n");
     return;
 }
 
