@@ -31,7 +31,7 @@ struct task {
 	int pid;
 	char *name;
 	int state;
-	int queuetime;
+	long int queuetime;
 	int quantum;
 	int runtime;
 	int waittime;
