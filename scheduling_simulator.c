@@ -23,6 +23,7 @@ void hw_suspend(int msec_10)
 {
     now->waittime = msec_10;
     now->state = TASK_WAITING;
+    printf("pid %d now waiting...\n",now->pid);
     swapcontext(&(now->uc),&ucs);
     return;
 }
@@ -208,7 +209,7 @@ void timeout()
     //chack every task
     scanlist();
 
-    if(now->state==TASK_RUNNING) {
+    if((now->state==TASK_RUNNING)&&(now->runtime<=0)) {
         printf("pid %d change from running to ready!!\n",now->pid);
         now->state=TASK_READY;
         swapcontext(&(now->uc),&ucs);
