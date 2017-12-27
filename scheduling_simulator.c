@@ -4,6 +4,7 @@
 struct task *head;
 struct task *temp;
 struct task *wake;
+struct task *wakename;
 struct task *now;
 //shell ucp
 static ucontext_t ucp;
@@ -12,7 +13,7 @@ static ucontext_t ucs;
 //terminate uct
 static ucontext_t uct;
 //trash context
-static ucontext_t trash;
+//static ucontext_t trash;
 
 //timer setup
 struct itimerval value,ovalue;
@@ -20,12 +21,16 @@ struct itimerval value,ovalue;
 //ctrl+z flag
 int flag=0;
 
+//suspend flag
+int sus=0;
+
 void hw_suspend(int msec_10)
 {
     now->waittime = msec_10;
     now->state = TASK_WAITING;
     printf("pid %d now waiting...\n",now->pid);
     swapcontext(&(now->uc),&ucs);
+    //sleep(1);
     return;
 }
 
@@ -39,7 +44,7 @@ void hw_wakeup_pid(int pid)
                 printf("wake up pid %d\n",wake->pid);
             }
             else{
-                printf("pid %d is not in waiting queue!!\n");
+                printf("pid %d is not in waiting queue!!\n",wake->pid);
             }
             return;
         }
@@ -51,7 +56,23 @@ void hw_wakeup_pid(int pid)
 
 int hw_wakeup_taskname(char *task_name)
 {
-    return 0;
+    int count=0;
+    wakename = head;
+    while(wakename!=NULL){
+        if(strcmp(wakename->name,task_name)==0){
+            if(wakename->state == TASK_WAITING){
+                wakename->state = TASK_READY;
+                count++;
+                printf("wake up pid %d , name = %s\n",wakename->pid,wakename->name);
+            }
+            else{
+                printf("pid %d %s is not in waiting queue!!\n",wakename->pid,wakename->name);
+            }
+        }
+        wakename = wakename->next;
+    }
+
+    return count;
 }
 
 struct task *getnewtask(char *task_name)
@@ -226,7 +247,7 @@ void timeout()
     scanlist();
 
     if((now->state==TASK_RUNNING)&&(now->runtime<=0)) {
-        printf("pid %d change from running to ready!!\n",now->pid);
+     //   printf("pid %d change from running to ready!!\n",now->pid);
         now->state=TASK_READY;
         swapcontext(&(now->uc),&ucs);
     }
@@ -238,6 +259,7 @@ void terminate()
 {
     now->state=TASK_TERMINATED;
     printf("pid %d terminated~\n",now->pid);
+    scanlist();
     swapcontext(&(now->uc),&ucs);
     //	return;
 }
@@ -249,16 +271,17 @@ void scheduler()
         if(now->state==TASK_READY) {
             now->state = TASK_RUNNING;
             now->runtime = now->quantum;
+//            printf("pid %d is running\n",now->pid);
             swapcontext(&ucs,&(now->uc));
             //printf("Im pid:%d\n",now->pid);
         }
-        if((now->runtime)<=10){
+ //       if((now->runtime)<=0){
             if(now->next!=NULL) {
                 now=now->next;
             } else if(now->next == NULL) { //tail
                 now=head;
             }
-        }
+ //       }
     }
 
 }
@@ -296,7 +319,7 @@ int main()
             } else {
                 psp = head;
                 while(psp!=NULL) {
-                    printf("%d\t%s\t%s\t%d\t%d\n",psp->pid,psp->name,task_string[psp->state],
+                    printf("%d\t%s\t%s\t%li\t%d\n",psp->pid,psp->name,task_string[psp->state],
                             psp->queuetime,psp->quantum);
                     psp=psp->next;
                 }
