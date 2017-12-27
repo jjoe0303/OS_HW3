@@ -319,8 +319,8 @@ int main()
             } else {
                 psp = head;
                 while(psp!=NULL) {
-                    printf("%d\t%s\t%s\t%li\t%d\n",psp->pid,psp->name,task_string[psp->state],
-                            psp->queuetime,psp->quantum);
+                    printf("%d\t%s\t%s\t%li\n",psp->pid,psp->name,task_string[psp->state],
+                            psp->queuetime);
                     psp=psp->next;
                 }
             }
