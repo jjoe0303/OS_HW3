@@ -24,6 +24,7 @@ int flag=0;
 //suspend flag
 int sus=0;
 
+int gpid=0;//global pid
 void hw_suspend(int msec_10)
 {
 	now->waittime = msec_10;

@@ -43,7 +43,6 @@ struct task {
 	char st[8192];
 };
 
-int gpid=0;//global pid
 void hw_suspend(int msec_10);
 void hw_wakeup_pid(int pid);
 int hw_wakeup_taskname(char *task_name);
